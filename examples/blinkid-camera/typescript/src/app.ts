@@ -13,19 +13,24 @@ import * as BlinkIDSDK from "@microblink/blinkid-in-browser-sdk";
 
 // General UI helpers
 const initialMessageEl = document.getElementById("msg") as HTMLHeadingElement;
-const progressEl = document.getElementById("load-progress") as HTMLProgressElement;
+const progressEl = document.getElementById(
+    "load-progress"
+) as HTMLProgressElement;
 
 // UI elements for scanning feedback
 const cameraFeed = document.getElementById("camera-feed") as HTMLVideoElement;
-const cameraFeedback = document.getElementById("camera-feedback") as HTMLCanvasElement;
+const cameraFeedback = document.getElementById(
+    "camera-feedback"
+) as HTMLCanvasElement;
 const drawContext = cameraFeedback.getContext("2d") as CanvasRenderingContext2D;
-const scanFeedback = document.getElementById("camera-guides") as HTMLParagraphElement;
+const scanFeedback = document.getElementById(
+    "camera-guides"
+) as HTMLParagraphElement;
 
 /**
  * Check browser support, customize settings and load WASM SDK.
  */
 function main() {
-
     // Check if browser has proper support for WebAssembly
     if (!BlinkIDSDK.isBrowserSupported()) {
         initialMessageEl.innerText = "This browser is not supported!";
@@ -33,7 +38,18 @@ function main() {
     }
 
     // 1. It's possible to obtain a free trial license key on microblink.com
-    const licenseKey = "sRwAAAYJbG9jYWxob3N0r/lOPk4/w35CpJlWKa04Zk/OIyg1ymyxyfVCTO3JMJN1y9rOdrdLRWWFZd1OO9wmZqMcLlTv9eD+tpBFyQbY2aoV+gz5caCvYBxr9UJfdR3Xe2uQcQGVI73rBLPEGvbIdV+veSW0SDL1fMS0IVmwDAQMTH62B9FoIM1RJuSGefEbNtBX/xHt1tRDc7PBz0tvc3elDjdivGBGVaIoVzEWP4WZPtSb3icsZ+DH2pVR6YCT99bb3V3w3n4dDOC72NRVXsR/pMyJidREqNbgLU0g85QtaKmqL4Owiq3ZUBgod/op5/xXed5GkJoazXHX9bPFLjg8D+XpWgiR9annH0ltghPN";
+
+    // 192.168.1.40
+    // const licenseKey =
+    // "sRwAAAYMMTkyLjE2OC4xLjQwJS5+wjvKJkWNhl/aMvh1Ftueane1kOy3U5gF/6JtDGKI2nMY1jokMknjDTHUht/klryyJLpw+uMkltzQNHWnLCMA8KVIjFrFsfvNuG/zA3SzVbyGvfxOKXSHBq2N4497/lHOTuX53/oBJzX2aIeFKOH+2CfcSuUsZRFWdI+AA2rd8oDne9Zcgg0/Q+8gUurSPkYwl94Llj+28uj8Tin8Dsp8CQa+E+vtk1Q=";
+
+    // ivan-pc.home
+    // const licenseKey =
+    // "sRwAAAYMaXZhbi1wYy5ob21llsgc+cmGuZGtNHZGZeO+zWgrCTUeeSE5kYJF9kZ2LzLssvBxwSObVrxxYPwvx3rnSptZUJUsNvbhJ4Ap73iHgPD+nbonndYb0wlqjiSphnKrNB+obEvEdutxSIWpyCta7HE6CQoQvOYQvRXmJf+I4Q0ey/fYtt5D1RQ9fJXxKmYXhncuQ7Yl5SU6r8B1Za9i0aNHW+dIrcj5LQxpk83fY11qPwVx6Wgnp8o=";
+
+    // localhost
+    const licenseKey =
+        "sRwAAAYJbG9jYWxob3N0r/lOPgo/w35CpJmmLkUezSPU+2vXheGyemaJR4ql0iDFHXQzp2V1gm5TcWoObLTZMFwXaMvvA99+E5WjtMpMH0bUjEFBbWJiIZYJ9HYNXJ1UBZip1oPSJe9YBD65BKYjPKU1bOydWogDjHAbgaJOwUW0uyJN9AHRavj4GkfIKv0iy1Y9CavsT04ADKUJ5hB9L1uFM9VeBOJwHwW67JsdpSJUNUDUy1a7JiE=";
 
     // 2. Create instance of SDK load settings with your license key
     const loadSettings = new BlinkIDSDK.WasmSDKLoadSettings(licenseKey);
@@ -44,23 +60,33 @@ function main() {
     loadSettings.allowHelloMessage = true;
 
     // In order to provide better UX, display progress bar while loading the SDK
-    loadSettings.loadProgressCallback = (progress: number) => progressEl!.value = progress;
+    loadSettings.loadProgressCallback = (progress: number) =>
+        (progressEl!.value = progress);
 
     // Set absolute location of the engine, i.e. WASM and support JS files
     loadSettings.engineLocation = window.location.origin;
 
     // 3. Load SDK
-    BlinkIDSDK.loadWasmModule(loadSettings).then((sdk: BlinkIDSDK.WasmSDK) => {
-        document.getElementById("screen-initial")?.classList.add("hidden");
-        document.getElementById("screen-start")?.classList.remove("hidden");
-        document.getElementById("start-scan")?.addEventListener("click", (ev: any) => {
-            ev.preventDefault();
-            startScan(sdk);
-        });
-    }, (error: any) => {
-        initialMessageEl.innerText = "Failed to load SDK!";
-        console.error("Failed to load SDK!", error);
-    });
+    BlinkIDSDK.loadWasmModule(loadSettings).then(
+        (sdk: BlinkIDSDK.WasmSDK) => {
+            document.getElementById("screen-initial")?.classList.add("hidden");
+            document.getElementById("screen-start")?.classList.remove("hidden");
+            document
+                .getElementById("start-scan")
+                ?.addEventListener("click", async (ev: any) => {
+                    ev.preventDefault();
+                    try {
+                        await startScan(sdk);
+                    } catch (error) {
+                        console.error(error);
+                    }
+                });
+        },
+        (error: any) => {
+            initialMessageEl.innerText = "Failed to load SDK!";
+            console.error("Failed to load SDK!", error);
+        }
+    );
 }
 
 /**
@@ -82,28 +108,32 @@ async function startScan(sdk: BlinkIDSDK.WasmSDK) {
     // [OPTIONAL] Create a callbacks object that will receive recognition events, such as detected object location etc.
     const callbacks = {
         onQuadDetection: (quad: BlinkIDSDK.DisplayableQuad) => drawQuad(quad),
-        onDetectionFailed: () => updateScanFeedback("Detection failed", true)
+        onDetectionFailed: () => updateScanFeedback("Detection failed", true),
     };
 
     // 2. Create a RecognizerRunner object which orchestrates the recognition with one or more
 
     //    recognizer objects.
     const recognizerRunner = await BlinkIDSDK.createRecognizerRunner(
+        // SDK instance to use
+        sdk,
 
-    // SDK instance to use
-    sdk, 
+        // List of recognizer objects that will be associated with created RecognizerRunner object
+        [genericIDRecognizer, idBarcodeRecognizer],
 
-    // List of recognizer objects that will be associated with created RecognizerRunner object
-    [genericIDRecognizer, idBarcodeRecognizer], 
+        // [OPTIONAL] Should recognition pipeline stop as soon as first recognizer in chain finished recognition
+        false,
 
-    // [OPTIONAL] Should recognition pipeline stop as soon as first recognizer in chain finished recognition
-    false, 
-
-    // [OPTIONAL] Callbacks object that will receive recognition events
-    callbacks);
+        // [OPTIONAL] Callbacks object that will receive recognition events
+        callbacks
+    );
 
     // 3. Create a VideoRecognizer object and attach it to HTMLVideoElement that will be used for displaying the camera feed
-    const videoRecognizer = await BlinkIDSDK.VideoRecognizer.createVideoRecognizerFromCameraStream(cameraFeed, recognizerRunner);
+    const videoRecognizer =
+        await BlinkIDSDK.VideoRecognizer.createVideoRecognizerFromCameraStream(
+            cameraFeed,
+            recognizerRunner
+        );
 
     // 4. Start the recognition and await for the results
     const processResult = await videoRecognizer.recognize();
@@ -113,14 +143,24 @@ async function startScan(sdk: BlinkIDSDK.WasmSDK) {
         const genericIDResults = await genericIDRecognizer.getResult();
         if (genericIDResults.state !== BlinkIDSDK.RecognizerResultState.Empty) {
             console.log("BlinkIDGeneric results", genericIDResults);
-            const firstName = genericIDResults.firstName || genericIDResults.mrz.secondaryID;
-            const lastName = genericIDResults.lastName || genericIDResults.mrz.primaryID;
+            const firstName =
+                genericIDResults.firstName || genericIDResults.mrz.secondaryID;
+            const lastName =
+                genericIDResults.lastName || genericIDResults.mrz.primaryID;
             const dateOfBirth = {
-                year: genericIDResults.dateOfBirth.year || genericIDResults.mrz.dateOfBirth.year,
-                month: genericIDResults.dateOfBirth.month || genericIDResults.mrz.dateOfBirth.month,
-                day: genericIDResults.dateOfBirth.day || genericIDResults.mrz.dateOfBirth.day
+                year:
+                    genericIDResults.dateOfBirth.year ||
+                    genericIDResults.mrz.dateOfBirth.year,
+                month:
+                    genericIDResults.dateOfBirth.month ||
+                    genericIDResults.mrz.dateOfBirth.month,
+                day:
+                    genericIDResults.dateOfBirth.day ||
+                    genericIDResults.mrz.dateOfBirth.day,
             };
-            alert(`Hello, ${firstName} ${lastName}!\n You were born on ${dateOfBirth.year}-${dateOfBirth.month}-${dateOfBirth.day}.`);
+            alert(
+                `Hello, ${firstName} ${lastName}!\n You were born on ${dateOfBirth.year}-${dateOfBirth.month}-${dateOfBirth.day}.`
+            );
         }
         const idBarcodeResult = await idBarcodeRecognizer.getResult();
         if (idBarcodeResult.state !== BlinkIDSDK.RecognizerResultState.Empty) {
@@ -130,12 +170,13 @@ async function startScan(sdk: BlinkIDSDK.WasmSDK) {
             const dateOfBirth = {
                 year: idBarcodeResult.dateOfBirth.year,
                 month: idBarcodeResult.dateOfBirth.month,
-                day: idBarcodeResult.dateOfBirth.day
+                day: idBarcodeResult.dateOfBirth.day,
             };
-            alert(`Hello, ${firstName} ${lastName}!\nYou were born on ${dateOfBirth.year}-${dateOfBirth.month}-${dateOfBirth.day}.`);
+            alert(
+                `Hello, ${firstName} ${lastName}!\nYou were born on ${dateOfBirth.year}-${dateOfBirth.month}-${dateOfBirth.day}.`
+            );
         }
-    }
-    else {
+    } else {
         alert("Could not extract information!");
     }
 
@@ -190,14 +231,11 @@ function applyTransform(transformMatrix: Float32Array) {
     let scaledVideoHeight = 0;
     let scaledVideoWidth = 0;
     if (canvasAR > videoAR) {
-
         // pillarboxing: https://en.wikipedia.org/wiki/Pillarbox
         scaledVideoHeight = cameraFeedback.height;
         scaledVideoWidth = videoAR * scaledVideoHeight;
         xOffset = (cameraFeedback.width - scaledVideoWidth) / 2;
-    }
-    else {
-
+    } else {
         // letterboxing: https://en.wikipedia.org/wiki/Letterboxing_(filming)
         scaledVideoWidth = cameraFeedback.width;
         scaledVideoHeight = scaledVideoWidth / videoAR;
@@ -208,12 +246,22 @@ function applyTransform(transformMatrix: Float32Array) {
     drawContext.translate(xOffset, yOffset);
 
     // second, scale the canvas to fit the scaled video
-    drawContext.scale(scaledVideoWidth / cameraFeed.videoWidth, scaledVideoHeight / cameraFeed.videoHeight);
+    drawContext.scale(
+        scaledVideoWidth / cameraFeed.videoWidth,
+        scaledVideoHeight / cameraFeed.videoHeight
+    );
 
     // finally, apply transformation from image coordinate system to
 
     // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/setTransform
-    drawContext.transform(transformMatrix[0], transformMatrix[3], transformMatrix[1], transformMatrix[4], transformMatrix[2], transformMatrix[5]);
+    drawContext.transform(
+        transformMatrix[0],
+        transformMatrix[3],
+        transformMatrix[1],
+        transformMatrix[4],
+        transformMatrix[2],
+        transformMatrix[5]
+    );
 }
 
 function clearDrawCanvas() {
@@ -226,8 +274,7 @@ function setupColor(displayable: BlinkIDSDK.Displayable) {
     let color = "#FFFF00FF";
     if (displayable.detectionStatus === 0) {
         color = "#FF0000FF";
-    }
-    else if (displayable.detectionStatus === 1) {
+    } else if (displayable.detectionStatus === 1) {
         color = "#00FF00FF";
     }
     drawContext.fillStyle = color;
@@ -256,7 +303,10 @@ function setupMessage(displayable: BlinkIDSDK.Displayable) {
             updateScanFeedback("Move document farther");
             break;
         default:
-            console.warn("Unhandled detection status!", displayable.detectionStatus);
+            console.warn(
+                "Unhandled detection status!",
+                displayable.detectionStatus
+            );
     }
 }
 
@@ -272,7 +322,7 @@ function updateScanFeedback(message: string, force?: boolean) {
     }
     scanFeedbackLock = true;
     scanFeedback.innerText = message;
-    window.setTimeout(() => scanFeedbackLock = false, 1000);
+    window.setTimeout(() => (scanFeedbackLock = false), 1000);
 }
 
 // Run
